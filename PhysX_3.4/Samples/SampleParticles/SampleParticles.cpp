@@ -62,7 +62,7 @@ using namespace PxToolkit;
 using namespace SampleRenderer;
 using namespace SampleFramework;
 
-REGISTER_SAMPLE(SampleParticles, "SampleParticles")
+//REGISTER_SAMPLE(SampleParticles, "SampleParticles")
 
 static const char* smoke_material_path = "materials/particle_smoke.xml";
 static const char* waterfall_material_path = "materials/particle_water.xml";

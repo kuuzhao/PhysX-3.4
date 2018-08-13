@@ -46,7 +46,7 @@
 #include <SampleUserInputDefines.h>
 #include "PxTkFile.h"
 
-REGISTER_SAMPLE(SampleVehicle, "SampleVehicle")
+//REGISTER_SAMPLE(SampleVehicle, "SampleVehicle")
 
 enum
 {

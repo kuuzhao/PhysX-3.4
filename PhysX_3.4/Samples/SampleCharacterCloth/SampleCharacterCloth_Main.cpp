@@ -52,7 +52,7 @@
 #include <SampleUserInput.h>
 #include <SampleUserInputDefines.h>
 
-REGISTER_SAMPLE(SampleCharacterCloth, "SampleCharacterCloth")
+//REGISTER_SAMPLE(SampleCharacterCloth, "SampleCharacterCloth")
 
 using namespace SampleFramework;
 using namespace SampleRenderer;
