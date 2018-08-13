@@ -1,0 +1,6 @@
+PhysX_3.4/Bin
+PhysX_3.4/Lib
+PxShared/bin
+PxShared/lib
+*.vs*
+*vc14win64*
