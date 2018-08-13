@@ -28,7 +28,7 @@
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
 #include "SamplePreprocessor.h"
-#include "SampleHelloWorld.h"
+#include "lzCctCollideUp.h"
 #include "SampleUtils.h"
 #include "SampleConsole.h"
 #include "RendererMemoryMacros.h"
@@ -50,35 +50,35 @@
 using namespace SampleRenderer;
 using namespace SampleFramework;
 
-// REGISTER_SAMPLE(SampleHelloWorld, "SampleHelloWorld")
+REGISTER_SAMPLE(LzCctCollideUp, "LzCctCollideUp")
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SampleHelloWorld::SampleHelloWorld(PhysXSampleApplication& app) :
+LzCctCollideUp::LzCctCollideUp(PhysXSampleApplication& app) :
 	PhysXSample(app)
 {
 }
 
-SampleHelloWorld::~SampleHelloWorld()
+LzCctCollideUp::~LzCctCollideUp()
 {
 }
 
-void SampleHelloWorld::onTickPreRender(float dtime)
+void LzCctCollideUp::onTickPreRender(float dtime)
 {
 	PhysXSample::onTickPreRender(dtime);
 }
 
-void SampleHelloWorld::onTickPostRender(float dtime)
+void LzCctCollideUp::onTickPostRender(float dtime)
 {
 	PhysXSample::onTickPostRender(dtime);
 }
 
-void SampleHelloWorld::customizeSceneDesc(PxSceneDesc& sceneDesc)
+void LzCctCollideUp::customizeSceneDesc(PxSceneDesc& sceneDesc)
 {
 	sceneDesc.flags |= PxSceneFlag::eREQUIRE_RW_LOCK;
 }
 
-void SampleHelloWorld::newMesh(const RAWMesh& data)
+void LzCctCollideUp::newMesh(const RAWMesh& data)
 {
 }
 
@@ -112,7 +112,7 @@ static void gImport(Console* console, const char* text, void* userData)
 	}
 }
 
-void SampleHelloWorld::onInit()
+void LzCctCollideUp::onInit()
 {
 	if(getConsole())
 	{
@@ -125,11 +125,11 @@ void SampleHelloWorld::onInit()
 
 	mApplication.setMouseCursorHiding(true);
 	mApplication.setMouseCursorRecentering(true);
-	mCameraController.init(PxVec3(0.0f, 10.0f, 0.0f), PxVec3(0.0f, 0.0f, 0.0f));
+	mCameraController.init(PxVec3(0.0f, 1.0f, 0.0f), PxVec3(0.0f, 0.0f, 0.0f));
 	mCameraController.setMouseSensitivity(0.5f);
 }
 
-void SampleHelloWorld::collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents)
+void LzCctCollideUp::collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents)
 {
 	PhysXSample::collectInputEvents(inputEvents);
 	getApplication().getPlatform()->getSampleUserInput()->unregisterInputEvent(CAMERA_SPEED_INCREASE);
@@ -139,7 +139,7 @@ void SampleHelloWorld::collectInputEvents(std::vector<const SampleFramework::Inp
 	TOUCH_INPUT_EVENT_DEF(SPAWN_DEBUG_OBJECT,	"Throw Object",		ABUTTON_5,	IBUTTON_5);
 }
 
-void SampleHelloWorld::helpRender(PxU32 x, PxU32 y, PxU8 textAlpha)
+void LzCctCollideUp::helpRender(PxU32 x, PxU32 y, PxU8 textAlpha)
 {
 	Renderer* renderer = getRenderer();
 	const PxU32 yInc = 18;
@@ -169,7 +169,7 @@ void SampleHelloWorld::helpRender(PxU32 x, PxU32 y, PxU8 textAlpha)
 		renderer->print(x, y += yInc, msg,scale, shadowOffset, textColor);
 }
 
-void SampleHelloWorld::descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha)
+void LzCctCollideUp::descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha)
 {
 	bool print=(textAlpha!=0.0f);
 
@@ -190,7 +190,7 @@ void SampleHelloWorld::descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha)
 	}
 }
 
-PxU32 SampleHelloWorld::getDebugObjectTypes() const
+PxU32 LzCctCollideUp::getDebugObjectTypes() const
 {
 	return DEBUG_OBJECT_BOX | DEBUG_OBJECT_SPHERE | DEBUG_OBJECT_CAPSULE | DEBUG_OBJECT_CONVEX;
 }

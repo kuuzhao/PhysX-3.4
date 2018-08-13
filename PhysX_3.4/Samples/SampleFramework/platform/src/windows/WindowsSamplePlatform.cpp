@@ -620,10 +620,12 @@ bool WindowsPlatform::openWindow(physx::PxU32& width,
 
 		registerWindowClass((HINSTANCE)::GetModuleHandle(0));
 		RECT winRect;
-		winRect.left   = offset;
-		winRect.top    = offset;
-		winRect.right  = width + offset;
-		winRect.bottom = height + offset;
+		//winRect.left   = offset;
+		//winRect.top    = offset;
+		winRect.left = 800;
+		winRect.top = 200;
+		winRect.right  = width + winRect.left;
+		winRect.bottom = height + winRect.top;
 		DWORD dwstyle  = (fullscreen ? g_fullscreenStyle : g_windowStyle);
 
 		::AdjustWindowRect(&winRect, dwstyle, 0);

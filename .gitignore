@@ -4,3 +4,6 @@ PxShared/bin
 PxShared/lib
 *.vs*
 *vc14win64*
+windowsInputEventList.txt
+windowsInputMapping.ods
+windowsUserInputList.txt
