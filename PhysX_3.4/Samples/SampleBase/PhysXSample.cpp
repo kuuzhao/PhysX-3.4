@@ -2549,7 +2549,7 @@ PxRigidActor* PhysXSample::createGrid(RenderMaterial* material)
 
 	// lz:
 	//		width 1.0f meter, (10*2)^2 cells
-	RenderGridActor* actor = SAMPLE_NEW(RenderGridActor)(*renderer, 10, 1.0f);
+	RenderGridActor* actor = SAMPLE_NEW(RenderGridActor)(*renderer, 4, 1.0f);
 	link(actor, shape, plane);
 	actor->setTransform(PxTransform(PxIdentity));
 	mRenderActors.push_back(actor);

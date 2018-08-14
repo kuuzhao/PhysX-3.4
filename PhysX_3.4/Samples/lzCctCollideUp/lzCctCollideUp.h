@@ -33,24 +33,75 @@
 
 #include "PhysXSample.h"
 
-	class LzCctCollideUp : public PhysXSample
-	{
-		public:
-												LzCctCollideUp(PhysXSampleApplication& app);
-		virtual									~LzCctCollideUp();
+class ControlledActor;
 
-		virtual	void							onTickPreRender(float dtime);
-		virtual	void							onTickPostRender(float dtime);
-		virtual	void							customizeSceneDesc(PxSceneDesc&);
+class ControllerContactFilter : public physx::PxSceneQueryFilterCallback
+{
+public:
 
-		virtual	void							newMesh(const RAWMesh&);
-		virtual	void							onInit();
-        virtual	void						    onInit(bool restart) { onInit(); }
+	ControllerContactFilter();
+	ControllerContactFilter(const physx::PxShape* characterControllerShape);
+	~ControllerContactFilter();
 
-		virtual void							collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents);
-		virtual void							helpRender(PxU32 x, PxU32 y, PxU8 textAlpha);
-		virtual	void							descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha);
-		virtual PxU32							getDebugObjectTypes() const;
-	};
+	void setCharacterControllerShape(const physx::PxShape* characterControllerShape);
+	physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData0, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& filterFlags);
+	physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit);
+
+private:
+
+	const physx::PxShape* mCharacterControllerShape;
+};
+
+class LzCctCollideUp :
+	public PhysXSample,
+	public PxControllerBehaviorCallback,
+	public PxUserControllerHitReport
+{
+public:
+	ControlledActor * mActor;
+
+	PxControllerManager* mControllerManager;
+	PxCapsuleController* mController;
+	PxShape* mShape;
+	ControllerContactFilter mControllerContactFilter;
+	bool	mIsLanded;
+	bool	mIsStopped;
+
+	// debug params
+	float roofHalfThickness;
+	float roofHeight;
+	float characterHeight;
+	float characterSkinWidth;
+
+
+
+	LzCctCollideUp(PhysXSampleApplication& app);
+	virtual									~LzCctCollideUp();
+
+	virtual	void							onTickPreRender(float dtime);
+	virtual	void							onTickPostRender(float dtime);
+	virtual	void							customizeSceneDesc(PxSceneDesc&);
+
+	virtual	void							newMesh(const RAWMesh&);
+	virtual	void							onInit();
+    virtual	void						    onInit(bool restart) { onInit(); }
+
+	virtual void							collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents);
+	virtual void							helpRender(PxU32 x, PxU32 y, PxU8 textAlpha);
+	virtual	void							descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha);
+	virtual PxU32							getDebugObjectTypes() const;
+
+	virtual void							onShapeHit(const PxControllerShapeHit& hit);
+	virtual void							onControllerHit(const PxControllersHit& hit) {}
+	virtual void							onObstacleHit(const PxControllerObstacleHit& hit) {}
+
+	virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxShape& shape, const PxActor& actor);
+	virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxController& controller);
+	virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxObstacle& obstacle);
+
+	PxRigidActor* CreateStaticBox(const PxVec3& pos, const PxVec3& dimensions);
+
+
+};
 
 #endif

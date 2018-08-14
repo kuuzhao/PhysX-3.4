@@ -61,7 +61,7 @@ static android_app* gState;
 // OSX event processing for some reason.
 #define SEPARATE_EVENT_LOOP 0
 #else
-#define SEPARATE_EVENT_LOOP 1
+#define SEPARATE_EVENT_LOOP 0
 #endif
 
 static PhysXSampleApplication* gApp = NULL;

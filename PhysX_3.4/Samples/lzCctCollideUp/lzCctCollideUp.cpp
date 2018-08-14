@@ -47,15 +47,61 @@
 #include <SampleUserInputIds.h>
 #include <SampleUserInputDefines.h>
 
+#include <SampleCCTActor.h>
+
+#include <iostream>
+
 using namespace SampleRenderer;
 using namespace SampleFramework;
+
+
+
+ControllerContactFilter::ControllerContactFilter()
+	: PxSceneQueryFilterCallback()
+	, mCharacterControllerShape(NULL)
+{
+}
+
+ControllerContactFilter::ControllerContactFilter(const physx::PxShape* characterControllerShape)
+	: PxSceneQueryFilterCallback()
+	, mCharacterControllerShape(characterControllerShape)
+{
+}
+
+ControllerContactFilter::~ControllerContactFilter()
+{
+}
+
+void ControllerContactFilter::setCharacterControllerShape(const physx::PxShape* characterControllerShape)
+{
+	mCharacterControllerShape = characterControllerShape;
+}
+
+physx::PxQueryHitType::Enum ControllerContactFilter::preFilter(const physx::PxFilterData& filterData0, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& filterFlags)
+{
+	if (shape == mCharacterControllerShape)
+		return physx::PxQueryHitType::eNONE;
+
+	return physx::PxQueryHitType::eBLOCK;
+}
+
+physx::PxQueryHitType::Enum ControllerContactFilter::postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
+{
+	return physx::PxQueryHitType::eBLOCK;
+}
+
 
 REGISTER_SAMPLE(LzCctCollideUp, "LzCctCollideUp")
 
 ///////////////////////////////////////////////////////////////////////////////
 
-LzCctCollideUp::LzCctCollideUp(PhysXSampleApplication& app) :
-	PhysXSample(app)
+LzCctCollideUp::LzCctCollideUp(PhysXSampleApplication& app)
+	: PhysXSample(app)
+	, mControllerManager(NULL)
+	, mController(NULL)
+	, mShape(NULL)
+	, mIsLanded(false)
+	, mIsStopped(false)
 {
 }
 
@@ -65,7 +111,40 @@ LzCctCollideUp::~LzCctCollideUp()
 
 void LzCctCollideUp::onTickPreRender(float dtime)
 {
+	static int frameCount = 1;
+	PxSceneWriteLock scopedLock(*mScene);
+
+	PxFilterData data = mShape->getQueryFilterData();
+
+	const PxControllerFilters filters(&data, &mControllerContactFilter);
+
+	PxVec3 dist = PxVec3(0, -0.01f, 0);
+	if (mIsLanded && !mIsStopped)
+		dist.x = 0.01f;
+
+	PxControllerCollisionFlags collisionFlags = mController->move(dist, 0.0f, dtime, filters);
+
+	if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN)
+		mIsLanded = true;
+	PxExtendedVec3 pos = mController->getPosition();
+	mIsStopped = pos.x > 1.5f;
+
+	if (!mIsStopped)
+	{
+		std::cout << "[" << frameCount << "] " << pos.x << "," << pos.y << "," << pos.z;
+		std::cout << " T1: " << pos.y + characterHeight * 0.5f;
+		std::cout << " T2: " << pos.y + characterHeight * 0.5f + characterSkinWidth;
+		std::cout << std::endl;
+	}
+	if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES)
+		std::cout << "eCOLLISION_SIDES" << std::endl;
+
 	PhysXSample::onTickPreRender(dtime);
+
+	mActor->sync();
+
+	frameCount++;
+	Sleep(30);
 }
 
 void LzCctCollideUp::onTickPostRender(float dtime)
@@ -114,6 +193,11 @@ static void gImport(Console* console, const char* text, void* userData)
 
 void LzCctCollideUp::onInit()
 {
+	roofHalfThickness = 0.05f;
+	roofHeight = 1.85f;
+	characterHeight = 1.75f;
+	characterSkinWidth = 0.01f;
+
 	if(getConsole())
 	{
 		getConsole()->addCmd("value", gValue);
@@ -122,11 +206,46 @@ void LzCctCollideUp::onInit()
 	}
 
 	PhysXSample::onInit();
+	PxSceneWriteLock scopedLock(*mScene);
+
+	getActiveScene().setGravity(PxVec3(0.0f, -9.81f, 0.0f));
 
 	mApplication.setMouseCursorHiding(true);
 	mApplication.setMouseCursorRecentering(true);
-	mCameraController.init(PxVec3(0.0f, 1.0f, 0.0f), PxVec3(0.0f, 0.0f, 0.0f));
-	mCameraController.setMouseSensitivity(0.5f);
+	mCameraController.init(PxVec3(0.0f, 1.0f, 3.0f), PxVec3(0.0f, 0.0f, 0.0f));
+	mCameraController.setMouseSensitivity(0.3f);
+
+	mControllerManager = PxCreateControllerManager(getActiveScene());
+
+	ControlledActorDesc desc;
+	desc.mType = PxControllerShapeType::eCAPSULE;
+	desc.mPosition = PxExtendedVec3(0.0f, characterHeight * 0.5f + 0.2f, -3.0f);
+	desc.mSlopeLimit = 0.0f;
+	desc.mContactOffset = characterSkinWidth;
+	desc.mStepOffset = 0.05f;
+	desc.mInvisibleWallHeight = 0.0f;
+	desc.mMaxJumpHeight = 0.0f;
+	desc.mRadius = 0.5f;
+	desc.mHeight = characterHeight - 2.0f * desc.mRadius;
+	desc.mCrouchHeight = 1.0f;
+	desc.mReportCallback = this;
+	desc.mBehaviorCallback = this;
+
+	mActor = SAMPLE_NEW(ControlledActor)(*this);
+	mActor->init(desc, mControllerManager);
+
+	RenderBaseActor* actor0 = mActor->getRenderActorStanding();
+	RenderBaseActor* actor1 = mActor->getRenderActorCrouching();
+	if (actor0)
+		mRenderActors.push_back(actor0);
+	if (actor1)
+		mRenderActors.push_back(actor1);
+
+	mController = static_cast<PxCapsuleController*>(mActor->getController());
+	mController->getActor()->getShapes(&mShape, 1);
+
+
+	CreateStaticBox(PxVec3(1.5f, roofHeight + roofHalfThickness, -3.0f), PxVec3(0.5f, roofHalfThickness, 0.5f));
 }
 
 void LzCctCollideUp::collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents)
@@ -193,4 +312,64 @@ void LzCctCollideUp::descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha)
 PxU32 LzCctCollideUp::getDebugObjectTypes() const
 {
 	return DEBUG_OBJECT_BOX | DEBUG_OBJECT_SPHERE | DEBUG_OBJECT_CAPSULE | DEBUG_OBJECT_CONVEX;
+}
+
+void LzCctCollideUp::onShapeHit(const PxControllerShapeHit& hit)
+{
+	defaultCCTInteraction(hit);
+}
+
+PxControllerBehaviorFlags LzCctCollideUp::getBehaviorFlags(const PxShape& shape, const PxActor& actor)
+{
+	const char* gPlankName = "Plank";
+	const char* gPlatformName = "Platform";
+
+	const char* actorName = actor.getName();
+#ifdef PLATFORMS_AS_OBSTACLES
+	PX_ASSERT(actorName != gPlatformName);	// PT: in this mode we should have filtered out those guys already
+#endif
+
+											// PT: ride on planks
+	if (actorName == gPlankName)
+		return PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT;
+
+	// PT: ride & slide on platforms
+	if (actorName == gPlatformName)
+		return PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT | PxControllerBehaviorFlag::eCCT_SLIDE;
+
+	return PxControllerBehaviorFlags(0);
+}
+
+PxControllerBehaviorFlags LzCctCollideUp::getBehaviorFlags(const PxController&)
+{
+	return PxControllerBehaviorFlags(0);
+}
+
+PxControllerBehaviorFlags LzCctCollideUp::getBehaviorFlags(const PxObstacle&)
+{
+	return PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT | PxControllerBehaviorFlag::eCCT_SLIDE;
+}
+
+PxRigidActor* LzCctCollideUp::CreateStaticBox(const PxVec3& pos, const PxVec3& dimensions)
+{
+	PxTransform	boxPose = PxTransform(pos, PxQuat(PxIdentity));
+
+	PxRigidActor* actor = static_cast<PxRigidActor*>(getPhysics().createRigidStatic(boxPose));
+	if (!actor)
+		return NULL;
+
+	PxShape* shape = PxRigidActorExt::createExclusiveShape(*actor, PxBoxGeometry(dimensions), getDefaultMaterial());
+	if (!shape)
+	{
+		actor->release();
+		return NULL;
+	}
+
+	mScene->addActor(*actor);
+
+	PxShape* boxShape;
+	PxU32 nb = actor->getShapes(&boxShape, 1);
+	createRenderBoxFromShape(actor, boxShape);
+
+	return actor;
 }
