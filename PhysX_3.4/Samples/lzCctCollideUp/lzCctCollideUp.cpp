@@ -50,6 +50,7 @@
 #include <SampleCCTActor.h>
 
 #include <iostream>
+#include <iomanip>
 
 using namespace SampleRenderer;
 using namespace SampleFramework;
@@ -103,6 +104,7 @@ LzCctCollideUp::LzCctCollideUp(PhysXSampleApplication& app)
 	, mIsLanded(false)
 	, mIsStopped(false)
 {
+	mCreateGroundPlane = false;
 }
 
 LzCctCollideUp::~LzCctCollideUp()
@@ -114,6 +116,8 @@ void LzCctCollideUp::onTickPreRender(float dtime)
 	static int frameCount = 1;
 	PxSceneWriteLock scopedLock(*mScene);
 
+	mController->invalidateCache();
+
 	PxFilterData data = mShape->getQueryFilterData();
 
 	const PxControllerFilters filters(&data, &mControllerContactFilter);
@@ -122,7 +126,13 @@ void LzCctCollideUp::onTickPreRender(float dtime)
 	if (mIsLanded && !mIsStopped)
 		dist.x = 0.01f;
 
-	PxControllerCollisionFlags collisionFlags = mController->move(dist, 0.0f, dtime, filters);
+	PxExtendedVec3 dbgpos = mController->getPosition();
+	if (dbgpos.x > 0.579f && dbgpos.x < 0.581f)
+	{
+		std::cout<<"This frame collide side"<<std::endl;
+	}
+
+	PxControllerCollisionFlags collisionFlags = mController->move(dist, 0.001f, 0.02f, filters);
 
 	if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN)
 		mIsLanded = true;
@@ -131,7 +141,7 @@ void LzCctCollideUp::onTickPreRender(float dtime)
 
 	if (!mIsStopped)
 	{
-		std::cout << "[" << frameCount << "] " << pos.x << "," << pos.y << "," << pos.z;
+		std::cout << std::fixed << std::setprecision(4) << "[" << frameCount << "] " << pos.x << "," << pos.y << "," << pos.z;
 		std::cout << " T1: " << pos.y + characterHeight * 0.5f;
 		std::cout << " T2: " << pos.y + characterHeight * 0.5f + characterSkinWidth;
 		std::cout << std::endl;
@@ -222,7 +232,8 @@ void LzCctCollideUp::onInit()
 	desc.mPosition = PxExtendedVec3(0.0f, characterHeight * 0.5f + 0.2f, -3.0f);
 	desc.mSlopeLimit = 0.0f;
 	desc.mContactOffset = characterSkinWidth;
-	desc.mStepOffset = 0.05f;
+	// desc.mStepOffset = 0.05f;
+	desc.mStepOffset = 0.3f;
 	desc.mInvisibleWallHeight = 0.0f;
 	desc.mMaxJumpHeight = 0.0f;
 	desc.mRadius = 0.5f;
@@ -244,8 +255,13 @@ void LzCctCollideUp::onInit()
 	mController = static_cast<PxCapsuleController*>(mActor->getController());
 	mController->getActor()->getShapes(&mShape, 1);
 
+	// floor
+	CreateStaticBox(PxVec3(0.0f, -0.5f, 0.0f), PxVec3(4.0f, 0.5f, 4.0f));
 
+	// ceiling
 	CreateStaticBox(PxVec3(1.5f, roofHeight + roofHalfThickness, -3.0f), PxVec3(0.5f, roofHalfThickness, 0.5f));
+
+
 }
 
 void LzCctCollideUp::collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents)
