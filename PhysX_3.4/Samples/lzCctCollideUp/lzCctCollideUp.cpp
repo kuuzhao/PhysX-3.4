@@ -144,10 +144,12 @@ void LzCctCollideUp::onTickPreRender(float dtime)
 		std::cout << std::fixed << std::setprecision(4) << "[" << frameCount << "] " << pos.x << "," << pos.y << "," << pos.z;
 		std::cout << " T1: " << pos.y + characterHeight * 0.5f;
 		std::cout << " T2: " << pos.y + characterHeight * 0.5f + characterSkinWidth;
+		if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES)
+			std::cout << " eCOLLISION_SIDES";
+		if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP)
+			std::cout << " eCOLLISION_UP";
 		std::cout << std::endl;
 	}
-	if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES)
-		std::cout << "eCOLLISION_SIDES" << std::endl;
 
 	PhysXSample::onTickPreRender(dtime);
 
