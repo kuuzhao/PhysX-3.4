@@ -55,44 +55,7 @@
 using namespace SampleRenderer;
 using namespace SampleFramework;
 
-
-
-ControllerContactFilter::ControllerContactFilter()
-	: PxSceneQueryFilterCallback()
-	, mCharacterControllerShape(NULL)
-{
-}
-
-ControllerContactFilter::ControllerContactFilter(const physx::PxShape* characterControllerShape)
-	: PxSceneQueryFilterCallback()
-	, mCharacterControllerShape(characterControllerShape)
-{
-}
-
-ControllerContactFilter::~ControllerContactFilter()
-{
-}
-
-void ControllerContactFilter::setCharacterControllerShape(const physx::PxShape* characterControllerShape)
-{
-	mCharacterControllerShape = characterControllerShape;
-}
-
-physx::PxQueryHitType::Enum ControllerContactFilter::preFilter(const physx::PxFilterData& filterData0, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& filterFlags)
-{
-	if (shape == mCharacterControllerShape)
-		return physx::PxQueryHitType::eNONE;
-
-	return physx::PxQueryHitType::eBLOCK;
-}
-
-physx::PxQueryHitType::Enum ControllerContactFilter::postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
-{
-	return physx::PxQueryHitType::eBLOCK;
-}
-
-
-REGISTER_SAMPLE(LzCctCollideUp, "LzCctCollideUp")
+// REGISTER_SAMPLE(LzCctCollideUp, "LzCctCollideUp")
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -111,6 +74,46 @@ LzCctCollideUp::~LzCctCollideUp()
 {
 }
 
+
+class ControllerContactFilter1 : public physx::PxSceneQueryFilterCallback
+{
+public:
+
+    ControllerContactFilter1() : PxSceneQueryFilterCallback()
+        , mCharacterControllerShape(NULL)
+    {
+    }
+    ControllerContactFilter1(const physx::PxShape* characterControllerShape) : PxSceneQueryFilterCallback()
+        , mCharacterControllerShape(characterControllerShape)
+    {
+    }
+
+    ~ControllerContactFilter1() {}
+
+    void setCharacterControllerShape(const physx::PxShape* characterControllerShape)
+    {
+        mCharacterControllerShape = characterControllerShape;
+    }
+
+    physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData0, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& filterFlags)
+    {
+        if (shape == mCharacterControllerShape)
+            return physx::PxQueryHitType::eNONE;
+
+        return physx::PxQueryHitType::eBLOCK;
+    }
+    physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
+    {
+        return physx::PxQueryHitType::eBLOCK;
+    }
+
+private:
+
+    const physx::PxShape* mCharacterControllerShape;
+};
+
+static ControllerContactFilter1 sControllerContactFilter;
+
 void LzCctCollideUp::onTickPreRender(float dtime)
 {
 	static int frameCount = 1;
@@ -120,7 +123,7 @@ void LzCctCollideUp::onTickPreRender(float dtime)
 
 	PxFilterData data = mShape->getQueryFilterData();
 
-	const PxControllerFilters filters(&data, &mControllerContactFilter);
+	const PxControllerFilters filters(&data, &sControllerContactFilter);
 
 	PxVec3 dist = PxVec3(0, -0.01f, 0);
 	if (mIsLanded && !mIsStopped)

@@ -28,60 +28,58 @@
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
 
-#ifndef LZ_CCT_COLLIDE_UP_H
-#define LZ_CCT_COLLIDE_UP_H
+#ifndef LZ_CCT_STUCK_ON_SLOPE_H
+#define LZ_CCT_STUCK_ON_SLOPE_H
 
 #include "PhysXSample.h"
 
 class ControlledActor;
 
-class LzCctCollideUp :
-	public PhysXSample,
-	public PxControllerBehaviorCallback,
-	public PxUserControllerHitReport
+class LzCctStuckOnSlope :
+    public PhysXSample,
+    public PxControllerBehaviorCallback,
+    public PxUserControllerHitReport
 {
 public:
-	ControlledActor * mActor;
+    ControlledActor * mActor;
 
-	PxControllerManager* mControllerManager;
-	PxCapsuleController* mController;
-	PxShape* mShape;
-	bool	mIsLanded;
-	bool	mIsStopped;
+    PxControllerManager* mControllerManager;
+    PxCapsuleController* mController;
+    PxShape* mShape;
+    bool	mIsLanded;
+    bool	mIsStopped;
 
-	// debug params
-	float roofHalfThickness;
-	float roofHeight;
-	float characterHeight;
-	float characterSkinWidth;
-
+    // debug params
+    float characterHeight;
+    float characterSkinWidth;
+    float slopeAngle;
 
 
-	LzCctCollideUp(PhysXSampleApplication& app);
-	virtual									~LzCctCollideUp();
+    LzCctStuckOnSlope(PhysXSampleApplication& app);
+    virtual									~LzCctStuckOnSlope();
 
-	virtual	void							onTickPreRender(float dtime);
-	virtual	void							onTickPostRender(float dtime);
-	virtual	void							customizeSceneDesc(PxSceneDesc&);
+    virtual	void							onTickPreRender(float dtime);
+    virtual	void							onTickPostRender(float dtime);
+    virtual	void							customizeSceneDesc(PxSceneDesc&);
 
-	virtual	void							newMesh(const RAWMesh&);
-	virtual	void							onInit();
+    virtual	void							newMesh(const RAWMesh&);
+    virtual	void							onInit();
     virtual	void						    onInit(bool restart) { onInit(); }
 
-	virtual void							collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents);
-	virtual void							helpRender(PxU32 x, PxU32 y, PxU8 textAlpha);
-	virtual	void							descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha);
-	virtual PxU32							getDebugObjectTypes() const;
+    virtual void							collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents);
+    virtual void							helpRender(PxU32 x, PxU32 y, PxU8 textAlpha);
+    virtual	void							descriptionRender(PxU32 x, PxU32 y, PxU8 textAlpha);
+    virtual PxU32							getDebugObjectTypes() const;
 
-	virtual void							onShapeHit(const PxControllerShapeHit& hit);
-	virtual void							onControllerHit(const PxControllersHit& hit) {}
-	virtual void							onObstacleHit(const PxControllerObstacleHit& hit) {}
+    virtual void							onShapeHit(const PxControllerShapeHit& hit);
+    virtual void							onControllerHit(const PxControllersHit& hit) {}
+    virtual void							onObstacleHit(const PxControllerObstacleHit& hit) {}
 
-	virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxShape& shape, const PxActor& actor);
-	virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxController& controller);
-	virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxObstacle& obstacle);
+    virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxShape& shape, const PxActor& actor);
+    virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxController& controller);
+    virtual PxControllerBehaviorFlags		getBehaviorFlags(const PxObstacle& obstacle);
 
-	PxRigidActor* CreateStaticBox(const PxVec3& pos, const PxVec3& dimensions);
+    PxRigidActor* CreateStaticBox(const PxVec3& pos, const PxQuat& rot, const PxVec3& dimensions);
 
 
 };

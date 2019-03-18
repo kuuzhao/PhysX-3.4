@@ -253,9 +253,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\lzCctCollideUp\lzCctCollideUp.cpp" />
+    <ClCompile Include="..\..\lzStuckOnSlope\lzCctStuckOnSlope.cpp" />
     <ClCompile Include="..\..\SampleHelloWorld\SampleHelloWorld.cpp">
     </ClCompile>
     <ClInclude Include="..\..\lzCctCollideUp\lzCctCollideUp.h" />
+    <ClInclude Include="..\..\lzStuckOnSlope\lzCctStuckOnSlope.h" />
     <ClInclude Include="..\..\SampleHelloWorld\SampleHelloWorld.h">
     </ClInclude>
   </ItemGroup>
