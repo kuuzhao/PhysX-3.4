@@ -48,6 +48,7 @@ public:
     PxShape* mShape;
     bool	mIsLanded;
     bool	mIsStopped;
+    bool    mStartSimulate;
 
     // debug params
     float characterHeight;
@@ -60,6 +61,7 @@ public:
 
     virtual	void							onTickPreRender(float dtime);
     virtual	void							onTickPostRender(float dtime);
+    virtual void							onDigitalInputEvent(const SampleFramework::InputEvent&, bool val);
     virtual	void							customizeSceneDesc(PxSceneDesc&);
 
     virtual	void							newMesh(const RAWMesh&);

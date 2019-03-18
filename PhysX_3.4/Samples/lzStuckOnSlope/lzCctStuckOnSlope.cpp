@@ -125,39 +125,44 @@ void LzCctStuckOnSlope::onTickPreRender(float dtime)
 
     PxFilterData data = mShape->getQueryFilterData();
 
-    const PxControllerFilters filters(&data, &sControllerContactFilter);
-
-    PxVec3 dist = PxVec3(0.0f, -1.00000000f, 0.0f);
-    if (mIsLanded && !mIsStopped)
+    if (mStartSimulate)
     {
-        dist.x += 0.0317387618f;
-        dist.z += 0.0948295891;
-    }
+        const PxControllerFilters filters(&data, &sControllerContactFilter);
 
-    PxControllerCollisionFlags collisionFlags = mController->move(dist, 0.001f, 0.02f, filters);
+        PxVec3 dist = PxVec3(0.0f, -1.00000000f, 0.0f);
+        if (mIsLanded && !mIsStopped)
+        {
+            dist.x += 0.0317387618f;
+            dist.z += 0.0948295891;
+        }
 
-    if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN)
-        mIsLanded = true;
-    PxExtendedVec3 pos = mController->getPosition();
-    mIsStopped = pos.z > 10.0f;
+        PxControllerCollisionFlags collisionFlags = mController->move(dist, 0.001f, 0.02f, filters);
 
-    if (frameCount < 80)
-    {
-#if 1
-        std::cout << std::fixed << std::setprecision(7) << "[" << frameCount << "] " << pos.x << "," << pos.y << "," << pos.z;
-        if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES)
-            std::cout << " eCOLLISION_SIDES";
-        if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP)
-            std::cout << " eCOLLISION_UP";
-        std::cout << std::endl;
-#endif
+        if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN)
+            mIsLanded = true;
+        PxExtendedVec3 pos = mController->getPosition();
+        mIsStopped = pos.z > 10.0f;
+
+        if (frameCount < 80)
+        {
+            #if 1
+            std::cout << std::fixed << std::setprecision(7) << "[" << frameCount << "] " << pos.x << "," << pos.y << "," << pos.z;
+            if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES)
+                std::cout << " eCOLLISION_SIDES";
+            if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP)
+                std::cout << " eCOLLISION_UP";
+            std::cout << std::endl;
+            #endif
+        }
     }
 
     PhysXSample::onTickPreRender(dtime);
 
     mActor->sync();
 
-    frameCount++;
+    if (mStartSimulate)
+        frameCount++;
+
     Sleep(30);
 }
 
@@ -207,6 +212,8 @@ static void gImport(Console* console, const char* text, void* userData)
 
 void LzCctStuckOnSlope::onInit()
 {
+    mStartSimulate = false;
+
     characterHeight = 2.0f;
     characterSkinWidth = 0.08f;
     slopeAngle = -25.0f;
@@ -274,14 +281,38 @@ void LzCctStuckOnSlope::onInit()
 
 }
 
+enum SampleParticlesInputEventIds
+{
+    SAMPLE_PARTICLES_FIRST = NUM_SAMPLE_BASE_INPUT_EVENT_IDS,
+
+    START_SIMULATE,
+
+    NUM_SAMPLE_PARTICLES_INPUT_EVENT_IDS,
+};
+
 void LzCctStuckOnSlope::collectInputEvents(std::vector<const SampleFramework::InputEvent*>& inputEvents)
 {
     PhysXSample::collectInputEvents(inputEvents);
     getApplication().getPlatform()->getSampleUserInput()->unregisterInputEvent(CAMERA_SPEED_INCREASE);
     getApplication().getPlatform()->getSampleUserInput()->unregisterInputEvent(CAMERA_SPEED_DECREASE);
 
-    //touch events
-    TOUCH_INPUT_EVENT_DEF(SPAWN_DEBUG_OBJECT, "Throw Object", ABUTTON_5, IBUTTON_5);
+    DIGITAL_INPUT_EVENT_DEF(START_SIMULATE, WKEY_M, XKEY_M, X1KEY_M, PS3KEY_M, PS4KEY_M, AKEY_UNKNOWN, OSXKEY_M, IKEY_UNKNOWN, LINUXKEY_M, WIIUKEY_UNKNOWN);
+}
+
+void LzCctStuckOnSlope::onDigitalInputEvent(const SampleFramework::InputEvent& ie, bool val)
+{
+    switch (ie.m_Id)
+    {
+    case START_SIMULATE:
+        if (val)
+        {
+            mStartSimulate = true;
+        }
+        break;
+    default:
+        PhysXSample::onDigitalInputEvent(ie, val);
+        break;
+    }
 }
 
 void LzCctStuckOnSlope::helpRender(PxU32 x, PxU32 y, PxU8 textAlpha)
